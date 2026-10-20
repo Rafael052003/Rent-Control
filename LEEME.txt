@@ -1,0 +1,25 @@
+CONTROL DE ALQUILER RR — Rafael Ramos
+
+Archivos:
+- index.html: aplicación completa.
+- manifest.webmanifest: configuración PWA.
+- sw.js: caché para uso sin conexión tras la primera carga.
+- icon.svg: icono.
+
+PROBAR:
+1. Abra index.html en un navegador para probar el registro y los recibos. Algunas funciones PWA (instalación y service worker) requieren HTTPS o localhost.
+2. Para instalar como PWA, publique TODOS los archivos en un hosting HTTPS estático, por ejemplo GitHub Pages, Netlify o un servidor propio.
+3. Desde Chrome en Android, abra el enlace publicado y use el menú ⋮ > Instalar aplicación o Añadir a pantalla de inicio.
+
+USO:
+- Ajustes: complete el nombre del inquilino y dirección, confirme alquiler mensual USD 230 y vencimiento día 15.
+- Pagos: registre cada pago o abono, la fecha pactada, la fecha real y el periodo mensual al que se aplica.
+- Cada nuevo registro crea un número consecutivo REC-0001, REC-0002, etc.
+- Recibo: imprimir o Guardar como PDF desde el diálogo de impresión. Compartir envía texto del recibo por las opciones disponibles del dispositivo; descargar HTML crea una versión imprimible.
+- Ajustes y respaldo: exporte periódicamente un JSON y guárdelo fuera del dispositivo. Importar reemplaza los datos actuales tras confirmación.
+
+NOTAS:
+- Los datos se guardan en localStorage del navegador. No se sincronizan automáticamente entre dispositivos.
+- El saldo mostrado corresponde al periodo seleccionado y a pagos marcados para descontar del alquiler; los conceptos adicionales se pueden marcar como no aplicados al alquiler.
+- El recibo descargado como HTML no es PDF; use Imprimir / Guardar PDF para obtener PDF.
+- No es asesoría legal ni un recibo fiscal certificado; revise que el contenido cumpla sus necesidades.

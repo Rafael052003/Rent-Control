@@ -1,0 +1,13 @@
+{
+  "name": "Control de Alquiler RR",
+  "short_name": "Alquiler RR",
+  "description": "Control de pagos de alquiler y recibos de Rafael Ramos",
+  "lang": "es-PA",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f7f5",
+  "theme_color": "#173b32",
+  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
