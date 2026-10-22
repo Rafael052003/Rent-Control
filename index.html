@@ -87,7 +87,7 @@ summary{font-weight:600;color:var(--teal);cursor:pointer}
 .x{background:#e9e1cc;border:0;width:36px;height:36px;border-radius:50%;font-size:16px}
 .rcvw{overflow-x:auto;margin-bottom:14px;border-radius:8px}
 .rcv{width:1100px;max-width:none;height:auto;border-radius:8px;border:1px solid var(--line);box-shadow:0 6px 18px rgba(0,0,0,.12);background:#fff;display:block;margin-bottom:14px}
-.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
 .acts .full{grid-column:1/-1}
 .sigwrap{border:1.5px dashed var(--line);border-radius:12px;background:#fff;margin:6px 0 10px}
 .sigwrap canvas{width:100%;height:auto;display:block;touch-action:none}
@@ -103,13 +103,15 @@ summary{font-weight:600;color:var(--teal);cursor:pointer}
 .rp tfoot td{font-weight:700;border-top:2px solid var(--ink);border-bottom:0}
 .rp h3{font:700 16px var(--serif);margin:14px 0 2px}
 .rp .neg{color:var(--bad)}
-.rhead h2{font:700 22px var(--serif)}
-.rhead div{font-size:14px}
+.rhead{text-align:center;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.rhead h2{font:700 24px var(--serif);margin-bottom:4px;color:var(--teal)}
+.rhead .sub{font-size:16px;font-weight:600;color:var(--ink)}
+.rhead .address{font-size:14px;color:var(--mute);margin-bottom:12px}
+.rhead .details{font-size:12px;color:var(--mute);line-height:1.6}
 #toast{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);background:#1d2b2a;color:#fff;padding:11px 16px;border-radius:12px;font-size:14px;z-index:40;max-width:88%;text-align:center}
 #offlineBar{position:fixed;left:0;right:0;top:0;background:#7a7466;color:#fff;font-size:13px;text-align:center;padding:6px;z-index:30;display:none}
 body.offline #offlineBar{display:block}
 #printArea,#printReport{display:none}
-/* Ajuste para que el recibo ocupe un tamaño de media página (más estético) */
 #printArea img{width:100%;height:auto;display:block;}
 @page{size:A4 portrait;margin:10mm}
 @media print{
@@ -121,8 +123,6 @@ body.offline #offlineBar{display:block}
   #printReport .rp{color:#111}
   #printReport .rp table{min-width:0;font-size:11px}
   #printReport .tw{overflow:visible}
-  #printReport .stats{grid-template-columns:repeat(2,1fr)}
-  #printReport .stat b{font-size:17px}
   #printReport .rp tr{break-inside:avoid}
 }
 /* Lock Screen */
@@ -133,6 +133,11 @@ body.offline #offlineBar{display:block}
 #lockPin:focus{border-color:var(--gold);outline:none}
 #lockBtn{margin-top:20px;padding:12px 40px;font-size:18px;border-radius:12px;border:0;background:var(--gold);color:var(--teal);font-weight:700;cursor:pointer}
 .lockErr{color:#ffcccb;margin-top:10px;font-size:14px;height:20px}
+/* Estilos para Confirmación nativa personalizada */
+#confirmModal{position:fixed;inset:0;background:rgba(15,40,38,.6);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+.confirm-box{background:var(--card);border-radius:16px;padding:24px;max-width:400px;width:100%;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,.2)}
+.confirm-box p{font-size:16px;margin:0 0 20px 0;color:var(--ink);line-height:1.5}
+.confirm-box .acts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0}
 </style>
 </head>
 <body>
@@ -163,6 +168,17 @@ body.offline #offlineBar{display:block}
 <div id="printReport"></div>
 <input type="file" id="fileImp" accept="application/json,.json,text/plain" class="hidden">
 <div id="toast" class="hidden"></div>
+
+<!-- Modal de Confirmación Personalizado -->
+<div id="confirmModal">
+  <div class="confirm-box">
+    <p id="confirmMsg"></p>
+    <div class="acts">
+      <button class="btn line" onclick="cerrarConfirm(false)">Cancelar</button>
+      <button class="btn danger" onclick="cerrarConfirm(true)">Aceptar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 (function(){
@@ -217,6 +233,18 @@ function anios(){
   if(S.cfg.inicio)s[S.cfg.inicio.slice(0,4)]=1;
   return Object.keys(s).sort().reverse();
 }
+
+/* ===== Modal de Confirmación ===== */
+var confirmCb=null;
+window.abrirConfirm=function(msg,cb){
+  $('#confirmMsg').textContent=msg;
+  $('#confirmModal').style.display='flex';
+  confirmCb=cb;
+};
+window.cerrarConfirm=function(res){
+  $('#confirmModal').style.display='none';
+  if(confirmCb){confirmCb(res);confirmCb=null;}
+};
 
 /* ===== Períodos de arrendamiento (día X al día X) ===== */
 function periodoInicioDeMes(ym){
@@ -554,7 +582,7 @@ function vPagos(){
   return '<div class="grid2"><label>Buscar<input id="q" type="search" placeholder="Recibo, concepto, nota…" value="'+esc(ui.q)+'"></label>'+
     '<label>Año<select id="anio"><option value="todos">Todos</option>'+ys.map(function(y){return'<option'+(ui.anio===y?' selected':'')+'>'+y+'</option>';}).join('')+'</select></label></div>'+
     '<div class="stats"><div class="stat"><small>Total cobrado</small><b id="totP">—</b></div><div class="stat"><small>Recibos</small><b id="cntP">—</b></div></div>'+
-    '<button class="btn line" style="width:100%;margin-bottom:12px" data-a="verifAbrir">🔍 Verificar referencia interna</button><div id="lista"></div>';
+    '<div id="lista"></div>';
 }
 function lista(){
   var q=ui.q.trim().toLowerCase();
@@ -581,7 +609,6 @@ function datosAnio(y){
   for(var m=1;m<=12;m++){
     var ym=y+'-'+p2(m),inicio=periodoInicioDeMes(ym);
     if(iniContrato && inicio < iniContrato){
-      periodos.push({inicio:inicio,vacio:true});
       continue;
     }
     var e=estadoPeriodo(inicio);
@@ -590,33 +617,46 @@ function datosAnio(y){
       if(p.anulado||esAlq(p))return;
       if(p.fecha>=inicio&&p.fecha<fin)otros+=p.monto;
     });
-    if(e.estado==='mora')pendiente+=e.pendiente;
-    periodos.push({inicio:inicio,esp:e.esperado,alq:e.pagado,saldo:e.pendiente,otros:otros,estado:e.estado});
+    
+    if(e.estado==='mora') pendiente+=e.pendiente;
+    
+    periodos.push({inicio:inicio,esp:e.esperado,alq:e.pagado,saldo:e.estado==='mora'?e.pendiente:0,otros:otros,estado:e.estado});
   }
   return{periodos:periodos,cobrado:r2(cobrado),pendiente:r2(pendiente),metodos:metodos};
 }
+
 function reportHTML(y,full){
   var d=datosAnio(y),cf=S.cfg,h='';
-  h+='<div class="rhead"><h2>Reporte anual '+y+'</h2><div>'+esc(cf.propiedad||'')+(cf.direccion?' · '+esc(cf.direccion):'')+'</div><div class="hint">Propietario: '+esc(cf.propietario||'—')+' · Inquilino: '+esc(cf.inquilino||'—')+' · Paga el día '+cf.dia+' de cada mes'+(full?' · Emitido el '+fechaCorta(hoyISO()):'')+'</div></div>';
-  h+='<div class="stats"><div class="stat"><small>Total cobrado</small><b>'+money(d.cobrado)+'</b></div><div class="stat"><small>Alquiler pendiente</small><b'+(d.pendiente>0?' style="color:var(--bad)"':'')+'>'+money(d.pendiente)+'</b></div></div>';
-  h+='<h3>Detalle por período</h3><div class="tw"><table><thead><tr><th>Período</th><th>Alquiler esperado</th><th>Alquiler pagado</th><th>Saldo</th><th>Otros cobros</th></tr></thead><tbody>';
-  var t={esp:0,alq:0,saldo:0,otros:0};
-  d.periodos.forEach(function(r){
-    if(r.vacio){
-      h+='<tr style="opacity:.4"><td>'+esc(periodoLabel(r.inicio))+'</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>';
-      return;
-    }
-    t.esp+=r.esp;t.alq+=r.alq;t.saldo+=r.saldo;t.otros+=r.otros;
-    h+='<tr><td>'+esc(periodoLabel(r.inicio))+'</td><td>'+(r.esp?money(r.esp):'—')+'</td><td>'+(r.esp?money(r.alq):'—')+'</td><td'+(r.saldo>0?' class="neg"':'')+'>'+(r.saldo>0?money(r.saldo):'—')+'</td><td>'+(r.otros?money(r.otros):'—')+'</td></tr>';
-  });
-  h+='</tbody><tfoot><tr><td>Total</td><td>'+money(t.esp)+'</td><td>'+money(t.alq)+'</td><td>'+money(t.saldo)+'</td><td>'+money(t.otros)+'</td></tr></tfoot></table></div>';
+  
+  h+='<div class="rhead">'+
+     '<h2>Reporte Anual '+y+'</h2>'+
+     '<div class="sub">'+esc(cf.propiedad||'Propiedad')+'</div>'+
+     '<div class="address">'+esc(cf.direccion||'')+'</div>'+
+     '<div class="details">'+
+       'Propietario: <strong>'+esc(cf.propietario||'—')+'</strong><br>'+
+       'Inquilino: <strong>'+esc(cf.inquilino||'—')+'</strong><br>'+
+       'Paga el día '+cf.dia+' de cada mes'+(full?' · Emitido el '+fechaCorta(hoyISO()):'')+
+     '</div>'+
+     '</div>';
+     
+  if(d.periodos.length===0){
+    h+='<div class="hint" style="text-align:center;padding:20px">No hay períodos registrados en este año.</div>';
+  } else {
+    h+='<h3>Detalle por período</h3><div class="tw"><table><thead><tr><th>Período</th><th>Alquiler pagado</th><th>Saldo pendiente</th><th>Otros cobros</th></tr></thead><tbody>';
+    var t={alq:0,saldo:0,otros:0};
+    d.periodos.forEach(function(r){
+      t.alq+=r.alq;t.saldo+=r.saldo;t.otros+=r.otros;
+      h+='<tr><td>'+esc(periodoLabel(r.inicio))+'</td><td>'+(r.alq?money(r.alq):'—')+'</td><td'+(r.saldo>0?' class="neg"':'')+'>'+(r.saldo>0?money(r.saldo):'—')+'</td><td>'+(r.otros?money(r.otros):'—')+'</td></tr>';
+    });
+    h+='</tbody><tfoot><tr><td>Total</td><td>'+money(t.alq)+'</td><td>'+money(t.saldo)+'</td><td>'+money(t.otros)+'</td></tr></tfoot></table></div>';
+  }
   
   var metKeys=Object.keys(d.metodos);
   if(metKeys.length){
     h+='<div class="hint" style="font-size:14px;margin-top:-8px"><b>Recibido en:</b> '+metKeys.map(function(k){return esc(k)+' ('+money(d.metodos[k])+')';}).join(' · ')+'</div>';
   }
 
-  h+='<div class="hint">El alquiler se agrupa por el período que cubre (día '+cf.dia+' al día '+cf.dia+' del mes siguiente). Los períodos anteriores al inicio del contrato se muestran atenuados.</div>';
+  h+='<div class="hint">El alquiler se agrupa por el período que cubre (día '+cf.dia+' al día '+cf.dia+' del mes siguiente).</div>';
   if(full){
     var ps=S.pagos.filter(function(p){return p.fecha.slice(0,4)===y;}).sort(function(a,b){return a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.seq-b.seq;});
     h+='<h3>Recibos emitidos</h3>'+(ps.length?'<div class="tw"><table style="min-width:0"><thead><tr><th>Recibo</th><th>Fecha</th><th>Concepto</th><th>Forma de pago</th><th>Monto</th></tr></thead><tbody>'+ps.map(function(p){
@@ -625,6 +665,7 @@ function reportHTML(y,full){
   }
   return h;
 }
+
 function vReporte(){
   var ys=anios();if(ys.indexOf(ui.anioR)<0)ui.anioR=ys[0];
   return '<div class="card"><label>Año del reporte<select id="anioR">'+ys.map(function(y){return'<option'+(ui.anioR===y?' selected':'')+'>'+y+'</option>';}).join('')+'</select></label>'+
@@ -633,7 +674,7 @@ function vReporte(){
     '<div class="card rp">'+reportHTML(ui.anioR,false)+'</div>';
 }
 function reportePDF(){
-  var htmlStr = '<html><head><style>body{font-family:sans-serif;padding:20px;color:#111}table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}th,td{border-bottom:1px solid #ccc;padding:6px;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#f0f0f0}.stats{display:flex;gap:20px;margin-bottom:20px}.stats div{border:1px solid #ccc;padding:10px;border-radius:5px}.hint{font-size:11px;color:#666}</style></head><body><div class="rp">'+reportHTML(ui.anioR,true)+'</div></body></html>';
+  var htmlStr = '<html><head><style>body{font-family:sans-serif;padding:20px;color:#111}table{width:100%;border-collapse:collapse;margin-bottom:20px;font-size:12px}th,td{border-bottom:1px solid #ccc;padding:6px;text-align:right}th:first-child,td:first-child{text-align:left}th{background:#f0f0f0}.hint{font-size:11px;color:#666}</style></head><body><div class="rp">'+reportHTML(ui.anioR,true)+'</div></body></html>';
   var iframe = document.createElement('iframe');
   iframe.style.position='absolute'; iframe.style.width='0'; iframe.style.height='0'; iframe.style.border='none';
   document.body.appendChild(iframe);
@@ -780,29 +821,71 @@ function guardarPago(){
 function abrirRecibo(id){
   var p=S.pagos.find(function(x){return x.id===id;});if(!p)return;ui.rid=id;
   
-  /* SOLO 2 BOTONES PRINCIPALES Y EL DE ANULAR */
+  /* AHORA CON BOTONES DE EDITAR Y BORRAR */
   abrirModal('<div class="sh-h"><h2>Recibo '+esc(p.num)+(p.anulado?'<span class="tag">ANULADO</span>':'')+'</h2><button class="x" data-a="cerrar">✕</button></div>'+
   '<div id="rcv" class="rcvw"></div>'+
   '<div class="hint">Desliza el recibo hacia los lados para verlo completo.</div>'+
   '<div class="acts">'+
   '<button class="btn dark" data-a="pdf">📲 Compartir / Guardar</button>'+
   '<button class="btn dark" data-a="imprimir">🖨️ Imprimir</button>'+
-  (p.anulado?'':'<button class="btn danger full" data-a="anular">Anular este recibo</button>')+'</div>');
+  (p.anulado?'':'<button class="btn line" data-a="editarRecibo">✏️ Editar datos</button>')+
+  (p.anulado?'':'<button class="btn danger" data-a="anular">🚫 Anular</button>')+
+  '<button class="btn danger full" data-a="borrarRecibo" style="margin-top:10px;background:#a8392e;color:#fff">🗑 Borrar definitivamente</button>'+
+  '</div>');
   dibujar(p).then(function(cv){cv.className='rcv';var h=$('#rcv');if(h){h.innerHTML='';h.appendChild(cv);}});
 }
-function verifAbrir(){
-  abrirModal('<div class="sh-h"><h2>Referencia interna del recibo</h2><button class="x" data-a="cerrar">✕</button></div>'+
-  '<p class="hint">Este código sirve para <b>tu control interno</b>: comprobar que un recibo que guardaste coincide con el registrado en esta app. Escribe el número y el código que aparecen en el recibo (junto al QR).</p>'+
-  '<label>Número de recibo<input id="v_num" autocapitalize="characters" placeholder="REC-0001"></label>'+
-  '<label>Código de referencia<input id="v_cod" autocapitalize="characters" placeholder="ABCD-1234"></label>'+
-  '<button class="btn primary" data-a="verificar">Comprobar</button><div id="v_res"></div>');
+function editarRecibo(){
+  var p=reciboActual();if(!p)return;
+  abrirModal('<div class="sh-h"><h2>Editar Recibo '+esc(p.num)+'</h2><button class="x" data-a="cerrar">✕</button></div>'+
+  '<p class="hint">Modifica los datos. Si cambias el monto o período, recuerda que afectará los saldos.</p>'+
+  '<label>Fecha del pago<input type="date" id="e_fecha" value="'+p.fecha+'"></label>'+
+  '<label>Monto recibido<input id="e_monto" inputmode="decimal" value="'+p.monto+'"></label>'+
+  '<label>Forma de pago<select id="e_metodo">'+METODOS.map(function(c){return'<option'+(c===p.metodo?' selected':'')+'>'+c+'</option>';}).join('')+'</select></label>'+
+  '<label>Referencia (opcional)<input id="e_ref" value="'+esc(p.ref)+'"></label>'+
+  '<label>Observaciones (opcional)<textarea id="e_notas" rows="2">'+esc(p.notas)+'</textarea></label>'+
+  '<button class="btn primary" data-a="guardarEdicion">Guardar cambios</button>');
 }
-function verificar(){
-  var num=$('#v_num').value.trim().toUpperCase(),cod=$('#v_cod').value.trim().toUpperCase().replace(/[\s-]/g,''),out=$('#v_res');
-  var p=S.pagos.find(function(x){return x.num.toUpperCase()===num;});
-  if(!p){out.innerHTML='<div class="vr bad">✘ No existe un recibo con ese número en esta app.</div>';return;}
-  if(codigoVerif(p).replace('-','')!==cod){out.innerHTML='<div class="vr bad">✘ El código no coincide. Revisa mayúsculas o posibles errores de transcripción.</div>';return;}
-  out.innerHTML='<div class="vr ok">✔ Coincide con el recibo registrado.<br>'+esc(p.num)+' · '+fechaLarga(p.fecha)+' · '+money(p.monto)+' · '+esc(conceptoTxt(p))+(p.anulado?'<br><b>Atención: este recibo fue ANULADO.</b>':'')+'</div>';
+function guardarEdicion(){
+  var p=reciboActual();if(!p)return;
+  var monto=toNum($('#e_monto').value),fecha=$('#e_fecha').value;
+  if(!fecha){toast('Indica la fecha');return;}
+  if(monto<0){toast('El monto no puede ser negativo');return;}
+  
+  p.monto=monto;
+  p.fecha=fecha;
+  p.metodo=$('#e_metodo').value;
+  p.ref=$('#e_ref').value.trim();
+  p.notas=$('#e_notas').value.trim();
+  
+  cambio();guardar();render();abrirRecibo(p.id);toast('Recibo actualizado');
+}
+
+function borrarRecibo(){
+  var p=reciboActual();if(!p)return;
+  abrirConfirm('¿Borrar definitivamente el recibo '+p.num+'? Esta acción no se puede deshacer y liberará el número para futuros cobros.', function(ok){
+    if(!ok)return;
+    S.pagos=S.pagos.filter(function(x){return x.id!==p.id;});
+    
+    /* 
+      LOGICA DEL CONTADOR:
+      Si el recibo borrado era el último generado (ej. REC-0002), 
+      regresamos el contador a ese número para que el próximo sea el mismo.
+    */
+    var n = parseInt(p.num.split('-')[1],10);
+    if(!isNaN(n) && n === S.cfg.siguiente - 1){
+      S.cfg.siguiente = n;
+    }
+    
+    cambio();guardar();cerrarModal();render();toast('Recibo borrado y número liberado');
+  });
+}
+
+function anular(){
+  var p=reciboActual();if(!p)return;
+  abrirConfirm('¿Anular el recibo '+p.num+'? Quedará marcado como ANULADO y no sumará a los totales. El número no se reutiliza.', function(ok){
+    if(!ok)return;
+    p.anulado=true;p.anuladoFecha=hoyISO();cambio();guardar();render();abrirRecibo(p.id);autoRespaldo();
+  });
 }
 
 /* ================= Dibujo del recibo ================= */
@@ -978,11 +1061,6 @@ async function imprimir(){
   img.onload=function(){setTimeout(function(){window.print();},200);};
   img.src=cv.toDataURL('image/png');
 }
-function anular(){
-  var p=reciboActual();if(!p)return;
-  if(!confirm('¿Anular el recibo '+p.num+'? Quedará marcado como ANULADO y no sumará a los totales. El número no se reutiliza.'))return;
-  p.anulado=true;p.anuladoFecha=hoyISO();cambio();guardar();render();abrirRecibo(p.id);autoRespaldo();
-}
 
 /* ================= Ajustes ================= */
 function guardarCfg(){
@@ -1067,13 +1145,14 @@ var H={
   cerrar:cerrarModal,
   guardarPago:guardarPago,
   recibo:function(id){abrirRecibo(id);},
-  verifAbrir:verifAbrir,
-  verificar:verificar,
   imprimir:imprimir,
   pdf:function(){compartir('pdf');},
   img:function(){compartir('img');},
   shareNative:compartirNativo,
   anular:anular,
+  editarRecibo:editarRecibo,
+  guardarEdicion:guardarEdicion,
+  borrarRecibo:borrarRecibo,
   mesPrev:function(){ui.periodo=periodoAdd(ui.periodo,-1);render();},
   mesNext:function(){ui.periodo=periodoAdd(ui.periodo,1);render();},
   guardarCfg:guardarCfg,
@@ -1094,9 +1173,13 @@ var H={
   firmaQuitar:function(){S.cfg.firmaImg='';guardar();render();},
   instalar:function(){if(!deferredInstall)return;deferredInstall.prompt();deferredInstall=null;render();},
   borrarTodo:function(){
-    if(!confirm('¿Borrar TODOS los datos (pagos, recibos y ajustes)? Esta acción no se puede deshacer.'))return;
-    if(!confirm('Última confirmación: se perderá todo. ¿Seguro?'))return;
-    S=defaults();S.cfg.secreto=nuevoSecreto();guardar();render();toast('Datos borrados');
+    abrirConfirm('¿Borrar TODOS los datos (pagos, recibos y ajustes)? Esta acción no se puede deshacer.', function(ok){
+      if(!ok)return;
+      abrirConfirm('Última confirmación: se perderá todo. ¿Seguro?', function(ok2){
+        if(!ok2)return;
+        S=defaults();S.cfg.secreto=nuevoSecreto();guardar();render();toast('Datos borrados');
+      });
+    });
   }
 };
 document.addEventListener('click',function(e){
