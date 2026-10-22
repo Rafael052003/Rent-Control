@@ -58,17 +58,18 @@ h2{font:700 20px var(--serif);margin:0}
 .sec{font:700 12px var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin:18px 2px 8px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip2{background:#fbe8e3;color:var(--bad);border:1px solid #efc3ba;border-radius:99px;padding:8px 12px;font:600 13px var(--sans)}
-.row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;font:inherit;color:inherit}
+.row{display:flex;gap:12px;align-items:center;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:8px;font:inherit;color:inherit;position:relative;z-index:1}
 .row:active{background:#f0ead9}
 .rl{min-width:84px}.rl b{display:block;font:700 15px var(--serif);color:var(--teal)}.rl span{font-size:12px;color:var(--mute)}
-.rm{flex:1;min-width:0}.rm div{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rm small{color:var(--mute)}
-.rr{font:700 17px var(--serif)}.rr.void{text-decoration:line-through;color:var(--bad)}
+.rm{flex:1;min-width:0;padding-right:10px}.rm div{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rm small{color:var(--mute);display:block;white-space:normal;line-height:1.2;margin-top:2px}
+.rr{font:700 17px var(--serif);white-space:nowrap}.rr.void{text-decoration:line-through;color:var(--bad)}
 .tag{font-size:11px;background:#f6dcd7;color:var(--bad);padding:2px 7px;border-radius:6px;margin-left:6px;font-weight:700}
 .banner{background:#fff3d6;border:1px solid #ecd08a;border-radius:14px;padding:12px;margin-bottom:14px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between}
 .empty{text-align:center;color:var(--mute);padding:28px 10px}
 label{display:block;font-size:13px;font-weight:600;color:var(--mute);margin-bottom:12px}
-input,select,textarea{display:block;width:100%;margin-top:5px;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font:16px var(--sans);color:var(--ink)}
+input,select,textarea{display:block;width:100%;margin-top:5px;padding:12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;font:16px var(--sans);color:var(--ink);appearance:none;-webkit-appearance:none}
 input:focus,select:focus,textarea:focus{outline:none;border-color:var(--teal2)}
+select{background-image:url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%230f4c47%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");background-repeat:no-repeat;background-position:right 12px top 50%;background-size:12px auto;padding-right:35px}
 label.chk{display:flex;gap:10px;align-items:center;color:var(--ink)}
 label.chk input{width:20px;height:20px;margin:0}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -186,8 +187,8 @@ body.offline #offlineBar{display:block}
 
 /* ================= Datos ================= */
 var KEY='alquiler_v1';
-var CONCEPTOS=['Alquiler','Depósito de garantía','Agua','Luz','Internet','Mora / recargo','Reparación','Otro'];
-var METODOS=['Efectivo','Yappy','Transferencia / ACH','Cheque','Tarjeta','Otro'];
+var CONCEPTOS=['Alquiler','Depósito de garantía','Mora / recargo','Otro'];
+var METODOS=['Efectivo','Yappy','Transferencia / ACH','Otro'];
 var SERIF='Georgia,"Times New Roman",serif';
 var SANS='system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
 
@@ -223,6 +224,7 @@ function fechaCorta(iso){if(!iso)return'—';var a=iso.split('-').map(Number);re
 function money(n){return S.cfg.simbolo+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
 function toNum(v){var n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:Math.round(n*100)/100;}
 function conceptoTxt(p){return p.concepto==='Otro'?(p.otro||'Otro'):p.concepto;}
+function metodoTxt(p){return p.metodo==='Otro'?(p.metodoOtro||'Otro'):p.metodo;}
 function fechaHora(ms){return ms?new Date(ms).toLocaleString('es'):'';}
 var toastT;
 function toast(m){var t=$('#toast');t.textContent=m;t.classList.remove('hidden');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.add('hidden');},3600);}
@@ -281,7 +283,7 @@ function periodoAdd(inicio,n){
 
 /* ===== Número a letras (español) ===== */
 function seccion(n){
-  var U=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintiocho','veintinueve'];
+  var U=['','uno','dos','tres','cuatro','cinco','seis','siete','ocho','nueve','diez','once','doce','trece','catorce','quince','dieciséis','diecisiete','dieciocho','diecinueve','veinte','veintiuno','veintidós','veintitrés','veinticuatro','veinticinco','veintiséis','veintisiete','veintinueve'];
   var D=['','','','treinta','cuarenta','cincuenta','sesenta','setenta','ochenta','noventa'];
   var C=['','ciento','doscientos','trescientos','cuatrocientos','quinientos','seiscientos','setecientos','ochocientos','novecientos'];
   if(n===100)return'cien';
@@ -557,9 +559,13 @@ function vInicio(){
   var needBk=(S.pagos.length>0)&&((cb>0&&dias>7)||cb>=5);
   var h='';
   if(needBk)h+='<div class="banner"><span>Tienes cambios sin respaldar. Descarga una copia.</span><button class="btn dark" data-a="descargarResp">Respaldar</button></div>';
+  
+  var bigVal = e.esperado > 0 ? e.esperado : 0;
+  var bigSub = e.estado==='ok' ? 'Pagado' : (e.pagado > 0 ? 'Pagado '+money(e.pagado) : 'Sin pagos aún');
+  
   h+='<section class="hero '+e.estado+'"><div class="mesnav"><button data-a="mesPrev">‹</button><div><small>Período</small><b>'+esc(periodoLabel(ui.periodo))+'</b></div><button data-a="mesNext">›</button></div>'+
-     '<span class="chip">'+esc(e.txt)+'</span><div class="big">'+money(e.pagado)+' <span>de '+money(e.esperado)+'</span></div>'+
-     '<div class="bar"><i style="width:'+pct+'%"></i></div><div class="meta">Vence el '+e.venc.toLocaleDateString('es',{day:'numeric',month:'long'})+' · Pendiente '+money(e.pendiente)+'</div>';
+     '<span class="chip">'+esc(e.txt)+'</span><div class="big">'+money(bigVal)+' <span>('+bigSub+')</span></div>'+
+     '<div class="bar"><i style="width:'+pct+'%"></i></div><div class="meta">Vence el '+e.venc.toLocaleDateString('es',{day:'numeric',month:'long'})+'</div>';
   if(e.saldoPrev!==0){
     h+='<div class="meta" style="color:#ffeb99">Saldo de períodos anteriores: '+money(e.saldoPrev)+'</div>';
   }
@@ -568,13 +574,16 @@ function vInicio(){
   if(pend.length){
     h+='<div class="sec">Períodos con saldo pendiente</div><div class="chips">'+pend.map(function(x){return'<button class="chip2" data-a="nuevoMes" data-id="'+x.inicio+'">'+esc(periodoLabel(x.inicio))+' · '+money(x.pend)+'</button>';}).join('')+'</div>';
   }
-  h+='<div class="sec">Últimos recibos</div>';
+  h+='<div class="sec" style="margin-top:24px">Últimos recibos</div>';
   h+=ult.length?ult.map(fila).join(''):'<div class="empty">Aún no hay pagos registrados.</div>';
+  
+  h+='<div style="height:80px"></div>';
+  
   return h;
 }
 function fila(p){
   return '<button class="row" data-a="recibo" data-id="'+p.id+'"><div class="rl"><b>'+esc(p.num)+'</b><span>'+fechaCorta(p.fecha)+'</span></div>'+
-    '<div class="rm"><div>'+esc(conceptoTxt(p))+(p.anulado?'<span class="tag">ANULADO</span>':'')+'</div><small>'+esc(p.metodo)+(esAlq(p)&&p.periodo?' · '+esc(periodoLabel(p.periodo)):'')+'</small></div>'+
+    '<div class="rm"><div>'+esc(conceptoTxt(p))+(p.anulado?'<span class="tag">ANULADO</span>':'')+'</div><small>'+esc(metodoTxt(p))+(esAlq(p)&&p.periodo?' · '+esc(periodoLabel(p.periodo)):'')+'</small></div>'+
     '<div class="rr '+(p.anulado?'void':'')+'">'+money(p.monto)+'</div></button>';
 }
 function vPagos(){
@@ -589,7 +598,7 @@ function lista(){
   var arr=S.pagos.filter(function(p){
     if(ui.anio!=='todos'&&p.fecha.slice(0,4)!==ui.anio)return false;
     if(!q)return true;
-    return[p.num,conceptoTxt(p),p.notas,p.ref,p.metodo].join(' ').toLowerCase().indexOf(q)>=0;
+    return[p.num,conceptoTxt(p),p.notas,p.ref,metodoTxt(p)].join(' ').toLowerCase().indexOf(q)>=0;
   }).sort(function(a,b){return b.seq-a.seq;});
   var tot=arr.reduce(function(t,p){return p.anulado?t:t+p.monto;},0);
   $('#totP').textContent=money(tot);$('#cntP').textContent=arr.length;
@@ -602,7 +611,7 @@ function datosAnio(y){
   S.pagos.forEach(function(p){
     if(!p.anulado&&p.fecha.slice(0,4)===String(y)){
       cobrado+=p.monto;
-      metodos[p.metodo]=(metodos[p.metodo]||0)+p.monto;
+      metodos[metodoTxt(p)]=(metodos[metodoTxt(p)]||0)+p.monto;
     }
   });
   var iniContrato = S.cfg.inicio ? periodoInicioDeFecha(S.cfg.inicio) : null;
@@ -660,7 +669,7 @@ function reportHTML(y,full){
   if(full){
     var ps=S.pagos.filter(function(p){return p.fecha.slice(0,4)===y;}).sort(function(a,b){return a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.seq-b.seq;});
     h+='<h3>Recibos emitidos</h3>'+(ps.length?'<div class="tw"><table style="min-width:0"><thead><tr><th>Recibo</th><th>Fecha</th><th>Concepto</th><th>Forma de pago</th><th>Monto</th></tr></thead><tbody>'+ps.map(function(p){
-      return'<tr><td>'+esc(p.num)+(p.anulado?' (ANULADO)':'')+'</td><td>'+fechaCorta(p.fecha)+'</td><td>'+esc(conceptoTxt(p))+(esAlq(p)&&p.periodo?' · '+esc(periodoLabel(p.periodo)):'')+'</td><td>'+esc(p.metodo)+'</td><td>'+(p.anulado?'—':money(p.monto))+'</td></tr>';
+      return'<tr><td>'+esc(p.num)+(p.anulado?' (ANULADO)':'')+'</td><td>'+fechaCorta(p.fecha)+'</td><td>'+esc(conceptoTxt(p))+(esAlq(p)&&p.periodo?' · '+esc(periodoLabel(p.periodo)):'')+'</td><td>'+esc(metodoTxt(p))+'</td><td>'+(p.anulado?'—':money(p.monto))+'</td></tr>';
     }).join('')+'</tbody></table></div>':'<div class="hint">Sin recibos en '+y+'.</div>');
   }
   return h;
@@ -689,7 +698,7 @@ function reportePDF(){
 function csvAnio(){
   var y=ui.anioR,rows=[['Fecha','Recibo','Concepto','Período','Monto','Forma de pago','Referencia','Observaciones','Estado']];
   S.pagos.filter(function(p){return p.fecha.slice(0,4)===y;}).sort(function(a,b){return a.fecha<b.fecha?-1:a.fecha>b.fecha?1:a.seq-b.seq;}).forEach(function(p){
-    rows.push([p.fecha,p.num,conceptoTxt(p),p.periodo?periodoLabel(p.periodo):'',p.monto.toFixed(2),p.metodo,p.ref,p.notas,p.anulado?'ANULADO':'Vigente']);
+    rows.push([p.fecha,p.num,conceptoTxt(p),p.periodo?periodoLabel(p.periodo):'',p.monto.toFixed(2),metodoTxt(p),p.ref,p.notas,p.anulado?'ANULADO':'Vigente']);
   });
   var txt=rows.map(function(r){return r.map(function(v){return'"'+String(v==null?'':v).replace(/"/g,'""')+'"';}).join(',');}).join('\r\n');
   descargar(new Blob(['﻿'+txt],{type:'text/csv;charset=utf-8'}),'reporte_alquiler_'+y+'.csv');
@@ -772,6 +781,7 @@ function abrirLiquidacion(){
   '<button class="btn primary" onclick="cerrarModal()">Entendido</button>');
 }
 
+/* ================= FORMULARIO COMPACTO ================= */
 function abrirForm(inicio){
   if(!S.cfg.inquilino||!S.cfg.propiedad||!S.cfg.renta){toast('Primero completa los datos en Ajustes');irA('ajustes');return;}
   if(!inicio)inicio=periodoInicioDeFecha(hoyISO());
@@ -783,22 +793,33 @@ function abrirForm(inicio){
   if(e.saldoPrev>0 && e.pendiente===0) monto=0;
 
   abrirModal('<div class="sh-h"><h2>Registrar cobro</h2><button class="x" data-a="cerrar">✕</button></div>'+
-  '<p class="hint">Se emitirá el recibo <b>'+esc(proxNum().num)+'</b></p>'+
-  (e.saldoPrev!==0?'<div class="hint" style="color:var(--teal);font-weight:bold">Tiene un saldo '+(e.saldoPrev>0?'a favor':'pendiente')+' de '+money(Math.abs(e.saldoPrev))+'</div>':'')+
+  '<p class="hint" style="margin-bottom:16px">Se emitirá el recibo <b>'+esc(proxNum().num)+'</b></p>'+
+  (e.saldoPrev!==0?'<div class="hint" style="color:var(--teal);font-weight:bold">Saldo '+(e.saldoPrev>0?'a favor':'pendiente')+' de '+money(Math.abs(e.saldoPrev))+'</div>':'')+
+  
+  '<div class="grid2">'+
   '<label>Fecha del pago<input type="date" id="f_fecha" value="'+hoyISO()+'"></label>'+
   '<label>Concepto<select id="f_concepto">'+CONCEPTOS.map(function(c){return'<option>'+c+'</option>';}).join('')+'</select></label>'+
-  '<label id="w_otro" class="hidden">Describe el concepto<input id="f_otro" maxlength="80"></label>'+
-  '<div id="w_corr">'+
+  '</div>'+
+  
+  '<label id="w_otro" class="hidden" style="margin-top:-6px">Describe el concepto<input id="f_otro" maxlength="80" placeholder="Ej: Reparación de tubería"></label>'+
+  
+  '<div id="w_corr" class="grid2" style="margin-top:-6px">'+
   '<label>Período que cubre<select id="f_periodo">'+ops.map(function(ini){
     return '<option value="'+ini+'"'+(ini===inicio?' selected':'')+'>'+esc(periodoLabel(ini))+'</option>';
   }).join('')+'</select></label>'+
   '</div>'+
-  '<label>Monto recibido<input id="f_monto" inputmode="decimal" value="'+monto+'" placeholder="0.00"></label>'+
-  '<label>Forma de pago<select id="f_metodo">'+METODOS.map(function(c){return'<option>'+c+'</option>';}).join('')+'</select></label>'+
+  
+  /* Monto siempre visible */
+  '<label style="margin-top:-6px">Monto recibido<input id="f_monto" inputmode="decimal" value="'+monto+'" placeholder="0.00"></label>'+
+
+  '<label style="margin-top:-6px">Forma de pago<select id="f_metodo">'+METODOS.map(function(c){return'<option>'+c+'</option>';}).join('')+'</select></label>'+
+  '<label id="w_metodoOtro" class="hidden" style="margin-top:-6px">Describe la forma de pago<input id="f_metodoOtro" maxlength="80" placeholder="Ej: Bizum, PayPal, etc."></label>'+
+
   '<label>Referencia / # de transacción (opcional)<input id="f_ref" maxlength="60"></label>'+
   '<label>Observaciones (opcional)<textarea id="f_notas" rows="2" maxlength="160"></textarea></label>'+
-  '<button class="btn primary" data-a="guardarPago">Guardar y generar recibo</button>');
+  '<button class="btn primary" data-a="guardarPago" style="margin-top:10px">Guardar y generar recibo</button>');
 }
+
 function autoMonto(){
   if(montoDirty)return;
   var c=$('#f_concepto').value,per=$('#f_periodo')?$('#f_periodo').value:'';
@@ -813,15 +834,19 @@ function guardarPago(){
   if(concepto==='Otro'&&!otro){toast('Describe el concepto');return;}
   var per=$('#f_periodo')?$('#f_periodo').value:'';
   if(concepto==='Alquiler'&&!per){toast('Indica el período que cubre el pago');return;}
+  
+  var metodo=$('#f_metodo').value;
+  var metodoOtro=$('#f_metodoOtro').value.trim();
+  if(metodo==='Otro'&&!metodoOtro){toast('Describe la forma de pago');return;}
+
   var n=proxNum();S.seq++;
-  var p={id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),seq:S.seq,num:n.num,fecha:fecha,monto:monto,concepto:concepto,otro:otro,periodo:concepto==='Alquiler'?per:'',metodo:$('#f_metodo').value,ref:$('#f_ref').value.trim(),notas:$('#f_notas').value.trim(),anulado:false};
+  var p={id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),seq:S.seq,num:n.num,fecha:fecha,monto:monto,concepto:concepto,otro:otro,periodo:concepto==='Alquiler'?per:'',metodo:metodo,metodoOtro:metodoOtro,ref:$('#f_ref').value.trim(),notas:$('#f_notas').value.trim(),anulado:false};
   S.pagos.push(p);S.cfg.siguiente=n.next;cambio();guardar();
   ui.periodo=per||ui.periodo;cerrarModal();render();abrirRecibo(p.id);autoRespaldo();
 }
 function abrirRecibo(id){
   var p=S.pagos.find(function(x){return x.id===id;});if(!p)return;ui.rid=id;
   
-  /* AHORA CON BOTONES DE EDITAR Y BORRAR */
   abrirModal('<div class="sh-h"><h2>Recibo '+esc(p.num)+(p.anulado?'<span class="tag">ANULADO</span>':'')+'</h2><button class="x" data-a="cerrar">✕</button></div>'+
   '<div id="rcv" class="rcvw"></div>'+
   '<div class="hint">Desliza el recibo hacia los lados para verlo completo.</div>'+
@@ -841,6 +866,7 @@ function editarRecibo(){
   '<label>Fecha del pago<input type="date" id="e_fecha" value="'+p.fecha+'"></label>'+
   '<label>Monto recibido<input id="e_monto" inputmode="decimal" value="'+p.monto+'"></label>'+
   '<label>Forma de pago<select id="e_metodo">'+METODOS.map(function(c){return'<option'+(c===p.metodo?' selected':'')+'>'+c+'</option>';}).join('')+'</select></label>'+
+  '<label id="e_metodoOtro_box" class="'+(p.metodo==='Otro'?'':'hidden')+'">Describe la forma de pago<input id="e_metodoOtro" maxlength="80" value="'+esc(p.metodoOtro||'')+'"></label>'+
   '<label>Referencia (opcional)<input id="e_ref" value="'+esc(p.ref)+'"></label>'+
   '<label>Observaciones (opcional)<textarea id="e_notas" rows="2">'+esc(p.notas)+'</textarea></label>'+
   '<button class="btn primary" data-a="guardarEdicion">Guardar cambios</button>');
@@ -851,9 +877,14 @@ function guardarEdicion(){
   if(!fecha){toast('Indica la fecha');return;}
   if(monto<0){toast('El monto no puede ser negativo');return;}
   
+  var metodo=$('#e_metodo').value;
+  var metodoOtro=$('#e_metodoOtro')?$('#e_metodoOtro').value.trim():'';
+  if(metodo==='Otro'&&!metodoOtro){toast('Describe la forma de pago');return;}
+
   p.monto=monto;
   p.fecha=fecha;
-  p.metodo=$('#e_metodo').value;
+  p.metodo=metodo;
+  p.metodoOtro=metodoOtro;
   p.ref=$('#e_ref').value.trim();
   p.notas=$('#e_notas').value.trim();
   
@@ -866,11 +897,6 @@ function borrarRecibo(){
     if(!ok)return;
     S.pagos=S.pagos.filter(function(x){return x.id!==p.id;});
     
-    /* 
-      LOGICA DEL CONTADOR:
-      Si el recibo borrado era el último generado (ej. REC-0002), 
-      regresamos el contador a ese número para que el próximo sea el mismo.
-    */
     var n = parseInt(p.num.split('-')[1],10);
     if(!isNaN(n) && n === S.cfg.siguiente - 1){
       S.cfg.siguiente = n;
@@ -972,7 +998,7 @@ async function dibujar(p){
     campo('POR CONCEPTO DE',conceptoTxt(p));
   }
   campo('CORRESPONDIENTE AL',p.periodo?corrDefault(p.periodo):'—');
-  campo('FORMA DE PAGO',p.metodo+(p.ref?'  ·  Ref. '+p.ref:''));
+  campo('FORMA DE PAGO',metodoTxt(p)+(p.ref?'  ·  Ref. '+p.ref:''));
   if(tieneNotas)campo('OBSERVACIONES',p.notas);
 
   c.fillStyle='#333';c.font='36px '+SANS;
@@ -1197,11 +1223,17 @@ document.addEventListener('change',function(e){
   if(id==='anio'){ui.anio=e.target.value;lista();}
   else if(id==='anioR'){ui.anioR=e.target.value;render();}
   else if(id==='f_concepto'){
-    var val=e.target.value, esAlq=val==='Alquiler';
+    var val=e.target.value;
     var reqMes=['Alquiler','Agua','Luz','Internet','Mora / recargo'].indexOf(val)>=0;
     $('#w_otro').classList.toggle('hidden',val!=='Otro');
     $('#w_corr').classList.toggle('hidden',!reqMes);
     autoMonto();
+  }
+  else if(id==='f_metodo'){
+    $('#w_metodoOtro').classList.toggle('hidden',e.target.value!=='Otro');
+  }
+  else if(id==='e_metodo'){
+    $('#e_metodoOtro_box').classList.toggle('hidden',e.target.value!=='Otro');
   }
   else if(id==='f_periodo'){autoMonto();}
   else if(id==='c_correo'){S.cfg.correoRespaldo=e.target.value.trim();guardar();}
