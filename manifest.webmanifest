@@ -1,13 +1,18 @@
 {
-  "name": "Control de Alquiler RR",
-  "short_name": "Alquiler RR",
-  "description": "Control de pagos de alquiler y recibos de Rafael Ramos",
-  "lang": "es-PA",
+  "name": "Mi Casa en Alquiler",
+  "short_name": "Mi Casa",
+  "description": "Control de pagos de alquiler y recibos numerados",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
+  "background_color": "#f6f1e4",
+  "theme_color": "#0f4c47",
   "orientation": "portrait",
-  "background_color": "#f4f7f5",
-  "theme_color": "#173b32",
-  "icons": [{"src":"icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
 }
