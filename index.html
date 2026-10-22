@@ -1263,10 +1263,22 @@ window.intentarDesbloquear=function(){
 };
 
 /* ================= Arranque ================= */
-if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){
-  navigator.serviceWorker.register('sw.js').catch(function(){});
+if('serviceWorker' in navigator && /^https?:$/.test(location.protocol)){
+  let refreshing = false;
+  
+  // Escuchar si el nuevo Service Worker toma el control
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (refreshing) return;
+    refreshing = true;
+    window.location.reload(); // Recarga la página automáticamente con la nueva versión
+  });
+
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    // Revisar actualizaciones cada vez que se abre la app
+    reg.update();
+  }).catch(function(){});
 }
-if(navigator.storage&&navigator.storage.persist){navigator.storage.persist().catch(function(){});}
+if(navigator.storage && navigator.storage.persist){navigator.storage.persist().catch(function(){});}
 migrarPeriodos();
 updateOnline();
 
