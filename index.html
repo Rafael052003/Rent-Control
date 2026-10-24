@@ -184,7 +184,10 @@ label.chk input{width:20px;height:20px;margin:0;accent-color:var(--gold)}
   overflow-y:auto;display:flex;align-items:flex-end;justify-content:center}
 .sheet{background:var(--surface);width:100%;max-width:760px;border-radius:22px 22px 0 0;
   padding:18px 18px calc(24px + env(safe-area-inset-bottom));margin-top:40px;min-height:30vh;color:var(--text);
-  border-top:1px solid var(--border)}
+  border-top:1px solid var(--border);
+  /* Añadido para scroll interno si el contenido es muy largo */
+  max-height: 90vh;
+  overflow-y: auto;}
 .sh-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
 .sh-actions { display: flex; gap: 8px; }
 .x{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:36px;height:36px;
@@ -884,7 +887,6 @@ function reportHTML(y,full){
 
   var metKeys=Object.keys(d.metodos);
   if(metKeys.length){
-    // CORRECCIÓN: Se quitó el margin-top negativo y se añadió padding-top para separar de la línea de la tabla
     h+='<div class="hint" style="font-size:14px;margin-top:0;padding-top:12px;border-top:1px dashed var(--border)"><b>Recibido en:</b> '+metKeys.map(function(k){return esc(k)+' ('+money(d.metodos[k])+')';}).join(' · ')+'</div>';
   }
   h+='<div class="hint">El alquiler se agrupa por el período que cubre (día '+cf.dia+' al día '+cf.dia+' del mes siguiente).</div>';
@@ -972,8 +974,11 @@ function vAjustes(){
 
 function abrirModalCfg(tipo){
   var c=S.cfg, html='';
+  // Se añade el botón de cerrar (X) en la cabecera para evitar que el usuario quede atrapado
+  var header = '<div class="sh-h"><h2>Título</h2><button class="x" data-a="cerrar">✕</button></div>';
+  
   if(tipo==='datos'){
-    html='<div class="sh-h"><h2>Datos del alquiler</h2><button class="x" data-a="cerrar">✕</button></div>'+
+    html=header.replace('Título','Datos del alquiler')+
       '<label>Nombre de la propiedad<input id="c_propiedad" value="'+esc(c.propiedad)+'"></label>'+
       '<label>Dirección<input id="c_direccion" value="'+esc(c.direccion)+'"></label>'+
       '<label>Propietario (quien cobra)<input id="c_propietario" value="'+esc(c.propietario)+'"></label>'+
@@ -999,7 +1004,7 @@ function abrirModalCfg(tipo){
       '<button class="btn primary" data-a="guardarCfg" style="margin-top:10px">Guardar datos</button>';
   }
   else if(tipo==='firma'){
-    html='<div class="sh-h"><h2>Firma</h2><button class="x" data-a="cerrar">✕</button></div>'+
+    html=header.replace('Título','Firma')+
       '<p class="hint">Dibuja tu firma. Aparecerá en todos los recibos generados.</p>'+
       (c.firmaImg?'<img class="sigimg" src="'+c.firmaImg+'"><div class="hint">Firma actual guardada.</div>':'')+
       '<div class="sigwrap"><canvas id="sig" width="700" height="220"></canvas></div>'+
@@ -1008,7 +1013,7 @@ function abrirModalCfg(tipo){
     setTimeout(initFirma, 50);
   }
   else if(tipo==='seguridad'){
-    html='<div class="sh-h"><h2>Seguridad</h2><button class="x" data-a="cerrar">✕</button></div>'+
+    html=header.replace('Título','Seguridad')+
       '<p class="hint">El PIN protege el acceso local a la aplicación.</p>'+
       '<label class="chk"><input type="checkbox" id="c_pin_on"'+(c.pinHash?' checked':'')+'> Bloquear app con PIN de 4 dígitos</label>'+
       '<div id="pin_box" class="'+(c.pinHash?'':'hidden')+'" style="margin-top:12px">'+
@@ -1017,7 +1022,7 @@ function abrirModalCfg(tipo){
       '<button class="btn primary" data-a="guardarCfg" style="margin-top:10px">Guardar cambios</button>';
   }
   else if(tipo==='respaldo'){
-    html='<div class="sh-h"><h2>Respaldo</h2><button class="x" data-a="cerrar">✕</button></div>'+
+    html=header.replace('Título','Respaldo')+
       '<p class="hint">Tus datos viven solo en este dispositivo. Descarga copias de seguridad con frecuencia.</p>'+
       '<label>Correo para respaldos (opcional)<input id="c_correo" type="email" value="'+esc(c.correoRespaldo)+'"></label>'+
       '<div class="acts" style="margin-top:16px">'+
@@ -1028,7 +1033,7 @@ function abrirModalCfg(tipo){
       '<div class="hint" id="bkEstado" style="text-align:center;margin-top:16px">'+esc(bkTxt())+'</div>';
   }
   else if(tipo==='deuda'){
-    html='<div class="sh-h"><h2>Registrar Deuda</h2><button class="x" data-a="cerrar">✕</button></div>'+
+    html=header.replace('Título','Registrar Deuda')+
       '<p class="hint">Registra una mora o reparación pendiente sin emitir recibo aún. La deuda aparecerá en la lista para cobrarla cuando el inquilino pague.</p>'+
       '<label>Fecha de la deuda<input type="date" id="d_fecha" value="'+hoyISO()+'"></label>'+
       '<label>Concepto<select id="d_concepto"><option>Mora / recargo</option><option>Reparación</option><option>Otro</option></select></label>'+
